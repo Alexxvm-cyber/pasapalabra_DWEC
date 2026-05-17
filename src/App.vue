@@ -2,6 +2,10 @@
   <div class="game-container">
     <h1>El Rosco - Pasapalabra</h1>
     
+    <div class="timer" :class="{ 'danger': timeLeft <= 10 }">
+      {{ formattedTime }}
+    </div>
+    
     <div class="rosco-container">
       <div class="center-content" v-if="!gameOver">
         <div class="current-letter">{{ currentQuestion.char }}</div>
@@ -24,6 +28,7 @@
       
       <div class="center-content" v-else>
         <h2>¡Juego Terminado!</h2>
+        <p v-if="isTimeUp" class="timeout-msg">¡Se acabó el tiempo!</p>
         <p>Aciertos: <span class="score-green">{{ getScore('acierto') }}</span></p>
         <p>Fallos: <span class="score-red">{{ getScore('fallo') }}</span></p>
       </div>
@@ -42,7 +47,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 
 const questions = ref([
   { char: 'A', question: 'Empieza por A: Medio de transporte aéreo.', answer: 'avion', status: 'pending' },
@@ -77,8 +82,33 @@ const questions = ref([
 const currentIndex = ref(0);
 const userAnswer = ref('');
 
+const timeLeft = ref(150);
+let timerInterval = null;
+
+const formattedTime = computed(() => {
+  const minutes = Math.floor(timeLeft.value / 60);
+  const seconds = timeLeft.value % 60;
+  return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+});
+
+const isTimeUp = computed(() => timeLeft.value === 0);
+const gameOver = computed(() => isTimeUp.value || !questions.value.some(q => q.status === 'pending'));
+
 const currentQuestion = computed(() => questions.value[currentIndex.value]);
-const gameOver = computed(() => !questions.value.some(q => q.status === 'pending'));
+
+onMounted(() => {
+  timerInterval = setInterval(() => {
+    if (timeLeft.value > 0 && !gameOver.value) {
+      timeLeft.value--;
+    } else if (gameOver.value) {
+      clearInterval(timerInterval);
+    }
+  }, 1000);
+});
+
+onUnmounted(() => {
+  clearInterval(timerInterval);
+});
 
 const checkAnswer = () => {
   if (gameOver.value) return;
@@ -98,8 +128,8 @@ const checkAnswer = () => {
 
 const pasapalabra = () => {
   if (gameOver.value) return;
-  userAnswer.value = '';
-  nextQuestion();
+  userAnswer.value = ''; 
+  nextQuestion(); 
 };
 
 const nextQuestion = () => {
@@ -155,6 +185,38 @@ const getLetterStyle = (index) => {
   min-height: 100vh;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #f0f8ff;
+}
+
+.timer {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #333;
+  background-color: white;
+  padding: 10px 30px;
+  border-radius: 10px;
+  border: 3px solid #ccc;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+}
+
+.timer.danger {
+  color: #dc3545;
+  border-color: #dc3545;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.timeout-msg {
+  color: #dc3545;
+  font-weight: bold;
+  font-size: 1.2rem;
+  margin-bottom: 10px;
 }
 
 .rosco-container {
