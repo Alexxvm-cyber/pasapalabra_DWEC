@@ -32,7 +32,8 @@ pipeline {
         }
         stage('Deploy automatico en Firebase') {
             steps {
-                echo 'Subiendo a Firebase...'
+                echo 'Instalando herramientas de Firebase y subiendo...'
+                sh 'npm install firebase-tools'
                 sh 'npx firebase deploy --only hosting --token $FIREBASE_TOKEN'
             }
         }
