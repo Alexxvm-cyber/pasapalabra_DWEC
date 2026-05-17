@@ -15,7 +15,10 @@
             placeholder="Escribe tu respuesta..." 
             autofocus
           />
-          <button @click="checkAnswer">Responder</button>
+          <div class="button-group">
+            <button @click="checkAnswer" class="btn-responder">Responder</button>
+            <button @click="pasapalabra" class="btn-pasapalabra">Pasapalabra</button>
+          </div>
         </div>
       </div>
       
@@ -46,7 +49,29 @@ const questions = ref([
   { char: 'B', question: 'Empieza por B: Vehículo ecológico de dos ruedas.', answer: 'bicicleta', status: 'pending' },
   { char: 'C', question: 'Empieza por C: Edificio donde vive la gente.', answer: 'casa', status: 'pending' },
   { char: 'D', question: 'Empieza por D: Herramienta para aflojar tornillos.', answer: 'destornillador', status: 'pending' },
-  { char: 'E', question: 'Empieza por E: Animal enorme con trompa.', answer: 'elefante', status: 'pending' }
+  { char: 'E', question: 'Empieza por E: Animal enorme con trompa.', answer: 'elefante', status: 'pending' },
+  { char: 'F', question: 'Empieza por F: Animal marino juguetón que aplaude con sus aletas.', answer: 'foca', status: 'pending' },
+  { char: 'G', question: 'Empieza por G: Felino doméstico que maúlla.', answer: 'gato', status: 'pending' },
+  { char: 'H', question: 'Empieza por H: Agua congelada.', answer: 'hielo', status: 'pending' },
+  { char: 'I', question: 'Empieza por I: Porción de tierra rodeada de agua por todas partes.', answer: 'isla', status: 'pending' },
+  { char: 'J', question: 'Empieza por J: Animal africano de cuello muy largo.', answer: 'jirafa', status: 'pending' },
+  { char: 'K', question: 'Empieza por K: Fruta de piel marrón peluda y pulpa verde.', answer: 'kiwi', status: 'pending' },
+  { char: 'L', question: 'Empieza por L: Satélite natural de la Tierra.', answer: 'luna', status: 'pending' },
+  { char: 'M', question: 'Empieza por M: Fruta roja o verde que le cayó en la cabeza a Newton.', answer: 'manzana', status: 'pending' },
+  { char: 'N', question: 'Empieza por N: Masa de vapor de agua que flota en el cielo.', answer: 'nube', status: 'pending' },
+  { char: 'Ñ', question: 'Empieza por Ñ: Ave corredora similar al avestruz que habita en Sudamérica.', answer: 'ñandu', status: 'pending' },
+  { char: 'O', question: 'Empieza por O: Mamífero carnívoro al que le gusta mucho la miel.', answer: 'oso', status: 'pending' },
+  { char: 'P', question: 'Empieza por P: Animal considerado el mejor amigo del ser humano.', answer: 'perro', status: 'pending' },
+  { char: 'Q', question: 'Empieza por Q: Alimento sólido derivado de la leche.', answer: 'queso', status: 'pending' },
+  { char: 'R', question: 'Empieza por R: Roedor pequeño al que le gusta el queso.', answer: 'raton', status: 'pending' },
+  { char: 'S', question: 'Empieza por S: Estrella luminosa, centro de nuestro sistema planetario.', answer: 'sol', status: 'pending' },
+  { char: 'T', question: 'Empieza por T: Medio de transporte formado por vagones.', answer: 'tren', status: 'pending' },
+  { char: 'U', question: 'Empieza por U: Fruta con la que se elabora el vino.', answer: 'uva', status: 'pending' },
+  { char: 'V', question: 'Empieza por V: Animal de granja que nos da leche.', answer: 'vaca', status: 'pending' },
+  { char: 'W', question: 'Empieza por W: Tecnología que nos permite conectarnos a Internet sin cables.', answer: 'wifi', status: 'pending' },
+  { char: 'X', question: 'Empieza por X: Instrumento musical de percusión con láminas de madera.', answer: 'xilofono', status: 'pending' },
+  { char: 'Y', question: 'Empieza por Y: Embarcación de lujo para recreo.', answer: 'yate', status: 'pending' },
+  { char: 'Z', question: 'Empieza por Z: Prenda de calzado que cubre el pie.', answer: 'zapato', status: 'pending' }
 ]);
 
 const currentIndex = ref(0);
@@ -67,16 +92,37 @@ const checkAnswer = () => {
     questions.value[currentIndex.value].status = 'fallo';
   }
 
+  userAnswer.value = ''; 
+  nextQuestion(); 
+};
+
+const pasapalabra = () => {
+  if (gameOver.value) return;
   userAnswer.value = '';
   nextQuestion();
 };
 
 const nextQuestion = () => {
   let next = currentIndex.value + 1;
-  while (next < questions.value.length && questions.value[next].status !== 'pending') {
-    next++;
+  
+  if (next >= questions.value.length) {
+    next = 0;
   }
-  if (next < questions.value.length) {
+  
+  let found = false;
+  let attempts = 0;
+  
+  while (!found && attempts < questions.value.length) {
+    if (questions.value[next].status === 'pending') {
+      found = true;
+    } else {
+      next++;
+      if (next >= questions.value.length) next = 0;
+    }
+    attempts++;
+  }
+  
+  if (found) {
     currentIndex.value = next;
   }
 };
@@ -156,9 +202,14 @@ input {
   text-align: center;
 }
 
+.button-group {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
 button {
-  padding: 10px;
-  background-color: #007bff;
+  padding: 10px 15px;
   color: white;
   border: none;
   border-radius: 5px;
@@ -166,9 +217,11 @@ button {
   font-weight: bold;
 }
 
-button:hover {
-  background-color: #0056b3;
-}
+.btn-responder { background-color: #007bff; }
+.btn-responder:hover { background-color: #0056b3; }
+
+.btn-pasapalabra { background-color: #ffc107; color: #333; }
+.btn-pasapalabra:hover { background-color: #e0a800; }
 
 .score-green { color: #28a745; font-weight: bold; }
 .score-red { color: #dc3545; font-weight: bold; }
